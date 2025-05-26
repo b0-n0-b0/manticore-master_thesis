@@ -1787,6 +1787,14 @@ class Stack(Eventful):
             return self.data[-1]
         return None
 
+    def peek_nth(self, n) -> typing.Optional[StackItem]:
+        """
+        :return: the item on top of the stack (without removing it)
+        """
+        if self.data:
+            return self.data[n*-1]
+        return None
+
     def empty(self) -> bool:
         """
         :return: True if the stack is empty, otherwise False
