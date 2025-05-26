@@ -93,8 +93,21 @@ class ManticoreWASM(ManticoreBase):
         """
         for state in self.ready_states:
             args = argv_generator(state)
-            logger.info("Invoking: %s(%s)", name, ", ".join(str(a) for a in args))
+            if name:
+                logger.info("Invoking: %s(%s)", name, ", ".join(str(a) for a in args))
             state.platform.invoke(name=name, argv=args)
+
+    @ManticoreBase.at_not_running
+    def invoke_by_index(self, idx=0, argv_generator=lambda s: []):
+        """
+        Maps the "invoke" command over all the ready states
+        :param idx: The index of function to invoke
+        :param argv_generator: A function that takes the current state and returns a list of arguments
+        """
+        for state in self.ready_states:
+            args = argv_generator(state)
+            logger.info("Invoking: function %s(%s)", idx, ", ".join(str(a) for a in args))
+            state.platform.invoke_by_index(idx=idx, argv=args)
 
     @ManticoreBase.at_not_running
     def default_invoke(self, func_name: str = "main"):

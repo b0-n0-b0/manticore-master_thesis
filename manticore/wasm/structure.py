@@ -1789,7 +1789,7 @@ class Stack(Eventful):
 
     def peek_nth(self, n) -> typing.Optional[StackItem]:
         """
-        :return: the item on top of the stack (without removing it)
+        :return: the nth item of the stack (without removing it)
         """
         if self.data:
             return self.data[n*-1]

@@ -334,6 +334,20 @@ class WASMWorld(Platform):
         for mem in self.store.mems:
             self.forward_events_from(mem)
 
+
+    def invoke_by_index(self, idx, argv=[], module=None):
+        """
+        Sets up the WASMWorld to run the function specified by `idx` when `ManticoreWASM.run` is called
+
+        :param idx: index of the function to invoke
+        :param argv: List of arguments to pass to the function. Should typically be I32, I64, F32, or F64
+        :param module: name of a module to call the function in (if not the default module)
+        :return: None
+        """
+        module = self.default_module if module is None else module
+        instance = self.modules[self.module_names[module]][1]
+        instance.invoke(self.stack, idx, self.store, list(argv))
+
     def invoke(self, name="main", argv=[], module=None):
         """
         Sets up the WASMWorld to run the function specified by `name` when `ManticoreWASM.run` is called
