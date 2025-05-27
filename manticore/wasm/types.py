@@ -327,15 +327,17 @@ ImmType = typing.Union[
 class Instruction:
     """Internal instruction class that's pickle-friendly and works with the type system"""
 
-    __slots__ = ["opcode", "mnemonic", "imm"]
+    __slots__ = ["opcode", "mnemonic", "imm","offset"]
     opcode: int  #: Opcode, used for dispatching instructions
     mnemonic: str  #: Used for debugging
     imm: ImmType  #: A class with the immediate data for this instruction
+    offset: int
 
-    def __init__(self, inst: wasm.decode.Instruction, imm=None):
+    def __init__(self, inst: wasm.decode.Instruction, imm=None, offset=-1):
         self.opcode = inst.op.id
         self.mnemonic = inst.op.mnemonic
         self.imm = imm
+        self.offset = offset
 
     def __repr__(self):
         return f"<Instruction: {self.mnemonic} ({debug(self.imm)})>"
@@ -358,43 +360,45 @@ def convert_instructions(inst_seq) -> WASMExpression:
     :param inst_seq: Sequence of raw instructions to process
     :return: The properly-typed instruction sequence in a format Manticore can use
     """
+    # DODODBG: added the offset value 
+    # TODO: check that it's actually what we want
     out = []
     if not isinstance(inst_seq, list):
         inst_seq = list(wasm.decode_bytecode(inst_seq))
     i: wasm.decode.Instruction
-    for i in inst_seq:
+    for idx, i in enumerate(inst_seq):
         if 0x02 <= i.op.id <= 0x04:
-            out.append(Instruction(i, BlockImm(i.imm.sig)))
+            out.append(Instruction(i, BlockImm(i.imm.sig), offset=idx))
         elif i.op.id in (0x0C, 0x0D):
-            out.append(Instruction(i, BranchImm(i.imm.relative_depth)))
+            out.append(Instruction(i, BranchImm(i.imm.relative_depth), offset=idx))
         elif i.op.id == 0x0E:
             out.append(
                 Instruction(
-                    i, BranchTableImm(i.imm.target_count, i.imm.target_table, i.imm.default_target)
+                    i, BranchTableImm(i.imm.target_count, i.imm.target_table, i.imm.default_target), offset=idx
                 )
             )
         elif i.op.id == 0x10:
-            out.append(Instruction(i, CallImm(i.imm.function_index)))
+            out.append(Instruction(i, CallImm(i.imm.function_index), offset=idx))
         elif i.op.id == 0x11:
-            out.append(Instruction(i, CallIndirectImm(i.imm.type_index, i.imm.reserved)))
+            out.append(Instruction(i, CallIndirectImm(i.imm.type_index, i.imm.reserved), offset=idx))
         elif 0x20 <= i.op.id <= 0x22:
-            out.append(Instruction(i, LocalVarXsImm(i.imm.local_index)))
+            out.append(Instruction(i, LocalVarXsImm(i.imm.local_index), offset=idx))
         elif i.op.id in (0x23, 0x24):
-            out.append(Instruction(i, GlobalVarXsImm(i.imm.global_index)))
+            out.append(Instruction(i, GlobalVarXsImm(i.imm.global_index), offset=idx))
         elif 0x28 <= i.op.id <= 0x3E:
-            out.append(Instruction(i, MemoryImm(i.imm.flags, i.imm.offset)))
+            out.append(Instruction(i, MemoryImm(i.imm.flags, i.imm.offset), offset=idx))
         elif i.op.id in (0x3F, 0x40):
-            out.append(Instruction(i, CurGrowMemImm(i.imm.reserved)))
+            out.append(Instruction(i, CurGrowMemImm(i.imm.reserved), offset=idx))
         elif i.op.id == 0x41:
-            out.append(Instruction(i, I32ConstImm(i.imm.value)))
+            out.append(Instruction(i, I32ConstImm(i.imm.value), offset=idx))
         elif i.op.id == 0x42:
-            out.append(Instruction(i, I64ConstImm(i.imm.value)))
+            out.append(Instruction(i, I64ConstImm(i.imm.value)), offset=idx)
         elif i.op.id == 0x43:
-            out.append(Instruction(i, F32ConstImm(i.imm.value)))
+            out.append(Instruction(i, F32ConstImm(i.imm.value), offset=idx))
         elif i.op.id == 0x44:
-            out.append(Instruction(i, F64ConstImm(i.imm.value)))
+            out.append(Instruction(i, F64ConstImm(i.imm.value), offset=idx))
         else:
-            out.append(Instruction(i))
+            out.append(Instruction(i, offset=idx))
 
     return out
 

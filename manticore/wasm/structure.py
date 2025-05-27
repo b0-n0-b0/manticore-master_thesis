@@ -812,7 +812,9 @@ class ModuleInstance(Eventful):
         self._block_depths = [0]
         self._advice = None
         self._state = None
-
+        # DODODBG
+        self._current_function = None
+        # DODODBG
         super().__init__()
 
     def __getstate__(self):
@@ -833,6 +835,10 @@ class ModuleInstance(Eventful):
                 "_block_depths": self._block_depths,
             }
         )
+        # DODODBG
+        state["_current_function"] = self._current_function
+        # DODODBG
+
         return state
 
     def __setstate__(self, state):
@@ -848,6 +854,9 @@ class ModuleInstance(Eventful):
         self.local_names = state["local_names"]
         self._instruction_queue = state["_instruction_queue"]
         self._block_depths = state["_block_depths"]
+        # DODODBG
+        self._current_function = state["_current_function"]
+        # DODODBG
         self._advice = None
         self._state = None
         super().__setstate__(state)
@@ -1080,6 +1089,9 @@ class ModuleInstance(Eventful):
         :param store: The current store, to use for execution
         """
         assert funcaddr in range(len(store.funcs))
+        # DODODBG
+        self._current_function = funcaddr
+        # DODODBG
         f: ProtoFuncInst = store.funcs[funcaddr]
         ty = f.type
         assert len(ty.result_types) <= 1
@@ -1255,13 +1267,17 @@ class ModuleInstance(Eventful):
         :return: True if execution succeeded, False if there are no more instructions to execute
         """
         # Maps return types from instruction immediates into actual types
+        # DODODBG
+        # print("structure execute called")
+        # DODODBG
         ret_type_map = {-1: [I32], -2: [I64], -3: [F32], -4: [F64], -64: []}
         self._advice = advice
         self._state = current_state
         # Use the AtomicStack context manager to catch Concretization and roll back changes
         with AtomicStack(stack) as aStack:
-            # print("Instructions:", self._instruction_queue)
             if self._instruction_queue:
+                # if self._current_function is not None:
+                    # print(store.funcs[self._current_function])
                 try:
                     inst = self._instruction_queue.popleft()
                     logger.info(
@@ -1270,6 +1286,10 @@ class ModuleInstance(Eventful):
                         inst.mnemonic,
                         debug(inst.imm) if inst.imm else "",
                     )
+                    # DODODBG
+                    if self._current_function is not None:
+                        print(f"In function: {self._current_function} executing {inst.mnemonic} @ offset {inst.offset}")
+                    # DODODBG
                     self._publish("will_execute_instruction", inst)
                     if 0x2 <= inst.opcode <= 0x11:  # This is a control-flow instruction
                         self.executor.zero_div = _eval_maybe_symbolic(

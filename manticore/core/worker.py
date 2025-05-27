@@ -134,6 +134,9 @@ class Worker:
                         # This does not hold the lock so we may loss some event
                         # flickering
                         while not m._killed.value:
+                            # DODODBG
+                            # print("worker execute called")
+                            # DODODBG
                             current_state.execute()
                         else:
                             logger.debug("[%r] Stopped and/or Killed", self.id)
