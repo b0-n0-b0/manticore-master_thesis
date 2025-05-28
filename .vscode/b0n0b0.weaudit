@@ -26,28 +26,6 @@
       }
     },
     {
-      "label": "this is where the event is published",
-      "entryType": 1,
-      "author": "b0n0b0",
-      "locations": [
-        {
-          "path": "manticore/wasm/structure.py",
-          "startLine": 1272,
-          "endLine": 1272,
-          "label": "",
-          "description": ""
-        }
-      ],
-      "details": {
-        "severity": "",
-        "difficulty": "",
-        "type": "",
-        "description": "",
-        "exploit": "",
-        "recommendation": "Short term, \nLong term, \n"
-      }
-    },
-    {
       "label": "this is where the binary file is loaded",
       "entryType": 1,
       "author": "b0n0b0",

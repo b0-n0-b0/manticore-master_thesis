@@ -461,7 +461,7 @@ class Module:
                     m.funcs[idx].locals = [
                         type_map[e.type] for e in c.locals for _i in range(e.count)
                     ]
-                    m.funcs[idx].body = convert_instructions(c.code)
+                    m.funcs[idx].body = convert_instructions(c.code, fidx=idx)
             elif sec_id == SEC_DATA:  # https://www.w3.org/TR/wasm-core-1/#data-section%E2%91%A0
                 for d in section_data.payload.entries:
                     m.data.append(
@@ -814,6 +814,7 @@ class ModuleInstance(Eventful):
         self._state = None
         # DODODBG
         self._current_function = None
+        self._return_to_fidxs = []
         # DODODBG
         super().__init__()
 
@@ -837,6 +838,7 @@ class ModuleInstance(Eventful):
         )
         # DODODBG
         state["_current_function"] = self._current_function
+        state["_return_to_fidxs"] = self._return_to_fidxs
         # DODODBG
 
         return state
@@ -856,6 +858,7 @@ class ModuleInstance(Eventful):
         self._block_depths = state["_block_depths"]
         # DODODBG
         self._current_function = state["_current_function"]
+        self._return_to_fidxs = state["_return_to_fidxs"]
         # DODODBG
         self._advice = None
         self._state = None
@@ -1090,6 +1093,8 @@ class ModuleInstance(Eventful):
         """
         assert funcaddr in range(len(store.funcs))
         # DODODBG
+        if self._current_function is not None:
+            self._return_to_fidxs.append(self._current_function)
         self._current_function = funcaddr
         # DODODBG
         f: ProtoFuncInst = store.funcs[funcaddr]
@@ -1287,8 +1292,8 @@ class ModuleInstance(Eventful):
                         debug(inst.imm) if inst.imm else "",
                     )
                     # DODODBG
-                    if self._current_function is not None:
-                        print(f"In function: {self._current_function} executing {inst.mnemonic} @ offset {inst.offset}")
+                    # if self._current_function is not None:
+                    #     print(f"In function: {self._current_function} executing {inst.mnemonic} @ offset {inst.offset}")
                     # DODODBG
                     self._publish("will_execute_instruction", inst)
                     if 0x2 <= inst.opcode <= 0x11:  # This is a control-flow instruction
@@ -1631,6 +1636,9 @@ class ModuleInstance(Eventful):
             stack.push(r)
 
         # Ensure that we've returned to the correct block depth for the frame we just popped
+        # DODODBG
+        self._current_function = self._return_to_fidxs.pop()
+        # DODODBG
         while len(self._block_depths) > f.expected_block_depth:
             # Discard the rest of the current block, then keep discarding blocks from the instruction queue
             # until we've purged the rest of this function.
