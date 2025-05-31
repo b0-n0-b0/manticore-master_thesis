@@ -362,45 +362,53 @@ def convert_instructions(inst_seq, fidx=None) -> WASMExpression:
     :param inst_seq: Sequence of raw instructions to process
     :return: The properly-typed instruction sequence in a format Manticore can use
     """
-    # DODODBG: added the offset value and function address value in order to gain granularity for the event callbacks
+    # DODODBG: added the offset value and function address value in order to gain granularity for the event callbacks (with wassail walk-around)
+    # !IMPORTANT: the idx shenanigans for the end and else "instructions" are needed to avoid discrepancies due to different instruction representation in wassail 
     out = []
     if not isinstance(inst_seq, list):
         inst_seq = list(wasm.decode_bytecode(inst_seq))
     i: wasm.decode.Instruction
-    for idx, i in enumerate(inst_seq):
+    idx = 1
+    print(f"_______________ function {fidx} _______________")
+    for i in inst_seq:
+        offset = idx
+        idx = idx + 1
+        if i.op.mnemonic == "end" or i.op.mnemonic == "else":
+            idx = idx - 1
+            offset = -1
         if 0x02 <= i.op.id <= 0x04:
-            out.append(Instruction(i, BlockImm(i.imm.sig), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, BlockImm(i.imm.sig), offset=offset, funcaddr=fidx))
         elif i.op.id in (0x0C, 0x0D):
-            out.append(Instruction(i, BranchImm(i.imm.relative_depth), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, BranchImm(i.imm.relative_depth), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x0E:
             out.append(
                 Instruction(
-                    i, BranchTableImm(i.imm.target_count, i.imm.target_table, i.imm.default_target), offset=idx, funcaddr=fidx
+                    i, BranchTableImm(i.imm.target_count, i.imm.target_table, i.imm.default_target), offset=offset, funcaddr=fidx
                 )
             )
         elif i.op.id == 0x10:
-            out.append(Instruction(i, CallImm(i.imm.function_index), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, CallImm(i.imm.function_index), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x11:
-            out.append(Instruction(i, CallIndirectImm(i.imm.type_index, i.imm.reserved), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, CallIndirectImm(i.imm.type_index, i.imm.reserved), offset=offset, funcaddr=fidx))
         elif 0x20 <= i.op.id <= 0x22:
-            out.append(Instruction(i, LocalVarXsImm(i.imm.local_index), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, LocalVarXsImm(i.imm.local_index), offset=offset, funcaddr=fidx))
         elif i.op.id in (0x23, 0x24):
-            out.append(Instruction(i, GlobalVarXsImm(i.imm.global_index), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, GlobalVarXsImm(i.imm.global_index), offset=offset, funcaddr=fidx))
         elif 0x28 <= i.op.id <= 0x3E:
-            out.append(Instruction(i, MemoryImm(i.imm.flags, i.imm.offset), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, MemoryImm(i.imm.flags, i.imm.offset), offset=offset, funcaddr=fidx))
         elif i.op.id in (0x3F, 0x40):
-            out.append(Instruction(i, CurGrowMemImm(i.imm.reserved), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, CurGrowMemImm(i.imm.reserved), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x41:
-            out.append(Instruction(i, I32ConstImm(i.imm.value), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, I32ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x42:
-            out.append(Instruction(i, I64ConstImm(i.imm.value)), offset=idx, funcaddr=fidx)
+            out.append(Instruction(i, I64ConstImm(i.imm.value)), offset=offset, funcaddr=fidx)
         elif i.op.id == 0x43:
-            out.append(Instruction(i, F32ConstImm(i.imm.value), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, F32ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x44:
-            out.append(Instruction(i, F64ConstImm(i.imm.value), offset=idx, funcaddr=fidx))
+            out.append(Instruction(i, F64ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         else:
-            out.append(Instruction(i, offset=idx, funcaddr=fidx))
-
+            out.append(Instruction(i, offset=offset, funcaddr=fidx))
+        print(f"Instr {offset}: {i.op.mnemonic}")
     return out
 
 

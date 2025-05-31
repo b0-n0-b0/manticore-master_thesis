@@ -134,7 +134,7 @@ class Worker:
                         # This does not hold the lock so we may loss some event
                         # flickering
                         while not m._killed.value:
-                            # DODODBG
+                            # DODODBG: tracking execution flow
                             # print("worker execute called")
                             # DODODBG
                             current_state.execute()

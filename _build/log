@@ -1,0 +1,14 @@
+# dune build -p wassail -j 15
+# OCAMLPARAM: unset
+# Shared cache: enabled-except-user-rules
+# Shared cache location: /home/b0n0b0/.cache/dune/db
+# Workspace root: /home/b0n0b0/thesis/manticore-master_thesis
+# Dune context:
+#  { name = "default"
+#  ; kind = "default"
+#  ; profile = Release
+#  ; merlin = true
+#  ; fdo_target_exe = None
+#  ; build_dir = In_build_dir "default"
+#  ; instrument_with = []
+#  }

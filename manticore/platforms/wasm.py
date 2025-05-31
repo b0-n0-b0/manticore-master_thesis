@@ -399,7 +399,7 @@ class WASMWorld(Platform):
         if not self.instantiated:
             raise RuntimeError("Trying to execute before instantiation!")
         try:
-            # DODODBG
+            # DODODBG: tracking execution flow
             # print("platform execute called")
             # DODODBG
             if not self._exec_instruction(self.instance, current_state):

@@ -620,7 +620,6 @@ class SMTLIBSolver(Solver):
                 # We know there is max 2 solutions when Bool
                 maxcnt = 2
                 silent = True
-
         with constraints as temp_cs:
             if isinstance(expression, Bool):
                 var = temp_cs.new_bool()
@@ -744,7 +743,6 @@ class SMTLIBSolver(Solver):
                 raise SolverError(
                     "Solver could not find a value for expression under current constraint set"
                 )
-
             values_to_ask: List[str] = []
             is_bv: List[bool] = []
             for idx, expression in enumerate(expressions):

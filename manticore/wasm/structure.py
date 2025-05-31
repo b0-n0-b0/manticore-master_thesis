@@ -812,7 +812,7 @@ class ModuleInstance(Eventful):
         self._block_depths = [0]
         self._advice = None
         self._state = None
-        # DODODBG
+        # DODODBG: current function and return to metadata
         self._current_function = None
         self._return_to_fidxs = []
         # DODODBG
@@ -836,7 +836,7 @@ class ModuleInstance(Eventful):
                 "_block_depths": self._block_depths,
             }
         )
-        # DODODBG
+        # DODODBG: current function and return to metadata
         state["_current_function"] = self._current_function
         state["_return_to_fidxs"] = self._return_to_fidxs
         # DODODBG
@@ -856,7 +856,7 @@ class ModuleInstance(Eventful):
         self.local_names = state["local_names"]
         self._instruction_queue = state["_instruction_queue"]
         self._block_depths = state["_block_depths"]
-        # DODODBG
+        # DODODBG: current function and return to metadata
         self._current_function = state["_current_function"]
         self._return_to_fidxs = state["_return_to_fidxs"]
         # DODODBG
@@ -1092,7 +1092,7 @@ class ModuleInstance(Eventful):
         :param store: The current store, to use for execution
         """
         assert funcaddr in range(len(store.funcs))
-        # DODODBG
+        # DODODBG: current function and return to metadata
         if self._current_function is not None:
             self._return_to_fidxs.append(self._current_function)
         self._current_function = funcaddr
@@ -1272,7 +1272,7 @@ class ModuleInstance(Eventful):
         :return: True if execution succeeded, False if there are no more instructions to execute
         """
         # Maps return types from instruction immediates into actual types
-        # DODODBG
+        # DODODBG: tracking execution flow
         # print("structure execute called")
         # DODODBG
         ret_type_map = {-1: [I32], -2: [I64], -3: [F32], -4: [F64], -64: []}
@@ -1291,7 +1291,7 @@ class ModuleInstance(Eventful):
                         inst.mnemonic,
                         debug(inst.imm) if inst.imm else "",
                     )
-                    # DODODBG
+                    # DODODBG: tracking execution flow and metadata
                     # if self._current_function is not None:
                     #     print(f"In function: {self._current_function} executing {inst.mnemonic} @ offset {inst.offset}")
                     # DODODBG
@@ -1636,7 +1636,7 @@ class ModuleInstance(Eventful):
             stack.push(r)
 
         # Ensure that we've returned to the correct block depth for the frame we just popped
-        # DODODBG
+        # DODODBG: current function and return to metadata
         self._current_function = self._return_to_fidxs.pop()
         # DODODBG
         while len(self._block_depths) > f.expected_block_depth:
