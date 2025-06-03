@@ -368,8 +368,8 @@ def convert_instructions(inst_seq, fidx=None) -> WASMExpression:
     if not isinstance(inst_seq, list):
         inst_seq = list(wasm.decode_bytecode(inst_seq))
     i: wasm.decode.Instruction
-    idx = 1
-    print(f"_______________ function {fidx} _______________")
+    idx = 0
+    # print(f"_______________ function {fidx} _______________")
     for i in inst_seq:
         offset = idx
         idx = idx + 1
@@ -408,7 +408,7 @@ def convert_instructions(inst_seq, fidx=None) -> WASMExpression:
             out.append(Instruction(i, F64ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         else:
             out.append(Instruction(i, offset=offset, funcaddr=fidx))
-        print(f"Instr {offset}: {i.op.mnemonic}")
+        # print(f"Instr {offset}: {i.op.mnemonic}")
     return out
 
 
