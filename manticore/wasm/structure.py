@@ -1656,6 +1656,8 @@ class ModuleInstance(Eventful):
         f = stack.get_frame()
         assert imm.function_index in range(len(f.frame.module.funcaddrs))
         a = f.frame.module.funcaddrs[imm.function_index]
+        # DODODBG: publish the will_call_function event
+        self._publish("will_call_function", a)
         self._invoke_inner(stack, a, store)
 
     def call_indirect(self, store: "Store", stack: "AtomicStack", imm: CallIndirectImm):
@@ -1704,6 +1706,8 @@ class ModuleInstance(Eventful):
         ft_actual = func.type
         if ft_actual != ft_expect:
             raise TypeMismatchTrap(ft_actual, ft_expect)
+        # DODODBG: publish the will_call_function event
+        self._publish("will_call_function", a)
         self._invoke_inner(stack, a, store)
 
 
