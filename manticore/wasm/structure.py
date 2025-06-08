@@ -2016,5 +2016,4 @@ class ConcretizeCondition(Concretize):
 
         def setstate(state, value: bool):
             state.platform.advice = advice + [value]
-
         super().__init__(message, condition, setstate, **kwargs)
