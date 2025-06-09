@@ -42,8 +42,8 @@ class State(StateBase):
         return frame.locals
 
     def execute(self):
-        # DODODBG: tracking execution flow
+        # NOTE:: tracking execution flow
         # print("State execute called")
-        # DODODBG
+        # NOTE:
         super().execute()
         return self._platform.execute(self)

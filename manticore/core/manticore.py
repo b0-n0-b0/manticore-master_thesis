@@ -932,9 +932,9 @@ class ManticoreBase(Eventful):
         plugin.manticore = self
         self.plugins[plugin.unique_name] = plugin
         events = Eventful.all_events()
-        # DODODBG: poccio orribile, poi lo fixo
+        # NOTE:: poccio orribile, poi lo fixo
         events.add("call_function")
-        # DODODBG
+        # NOTE:
         prefix = Eventful.prefixes
         all_events = [x + y for x, y in itertools.product(prefix, events)]
         for event_name in all_events:

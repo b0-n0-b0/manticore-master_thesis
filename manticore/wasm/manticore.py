@@ -98,6 +98,17 @@ class ManticoreWASM(ManticoreBase):
             state.platform.invoke(name=name, argv=args)
 
     @ManticoreBase.at_not_running
+    def get_params_by_func_index(self, idx=0):
+        """
+        Retrieves a function's parameter types  
+        :param idx: The index of function to invoke
+        """
+        types = []
+        for state in self.ready_states:
+            types.append(state.platform.get_params_by_func_index(idx))
+        return types
+
+    @ManticoreBase.at_not_running
     def invoke_by_index(self, idx=0, argv_generator=lambda s: [], params_specs=[]):
         """
         Maps the "invoke" command over all the ready states

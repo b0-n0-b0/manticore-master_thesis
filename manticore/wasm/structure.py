@@ -812,10 +812,10 @@ class ModuleInstance(Eventful):
         self._block_depths = [0]
         self._advice = None
         self._state = None
-        # DODODBG: current function and return to metadata
+        # NOTE:: current function and return to metadata
         self._current_function = None
         self._return_to_fidxs = []
-        # DODODBG
+        # NOTE:
         super().__init__()
 
     def __getstate__(self):
@@ -836,10 +836,10 @@ class ModuleInstance(Eventful):
                 "_block_depths": self._block_depths,
             }
         )
-        # DODODBG: current function and return to metadata
+        # NOTE:: current function and return to metadata
         state["_current_function"] = self._current_function
         state["_return_to_fidxs"] = self._return_to_fidxs
-        # DODODBG
+        # NOTE:
 
         return state
 
@@ -856,10 +856,10 @@ class ModuleInstance(Eventful):
         self.local_names = state["local_names"]
         self._instruction_queue = state["_instruction_queue"]
         self._block_depths = state["_block_depths"]
-        # DODODBG: current function and return to metadata
+        # NOTE:: current function and return to metadata
         self._current_function = state["_current_function"]
         self._return_to_fidxs = state["_return_to_fidxs"]
-        # DODODBG
+        # NOTE:
         self._advice = None
         self._state = None
         super().__setstate__(state)
@@ -1039,7 +1039,7 @@ class ModuleInstance(Eventful):
             if export.name == name and isinstance(export.value, FuncAddr):
                 return self.invoke(stack, export.value, store, argv)
         raise RuntimeError("Can't find a function called", name)
-
+    
     def invoke(self, stack: "Stack", funcaddr: FuncAddr, store: Store, argv: typing.List[Value]):
         """
         Invocation wrapper. Checks the function type, pushes the args to the stack, and calls _invoke_inner.
@@ -1092,11 +1092,11 @@ class ModuleInstance(Eventful):
         :param store: The current store, to use for execution
         """
         assert funcaddr in range(len(store.funcs))
-        # DODODBG: current function and return to metadata
+        # NOTE:: current function and return to metadata
         if self._current_function is not None:
             self._return_to_fidxs.append(self._current_function)
         self._current_function = funcaddr
-        # DODODBG
+        # NOTE:
         f: ProtoFuncInst = store.funcs[funcaddr]
         ty = f.type
         assert len(ty.result_types) <= 1
@@ -1272,9 +1272,9 @@ class ModuleInstance(Eventful):
         :return: True if execution succeeded, False if there are no more instructions to execute
         """
         # Maps return types from instruction immediates into actual types
-        # DODODBG: tracking execution flow
+        # NOTE:: tracking execution flow
         # print("structure execute called")
-        # DODODBG
+        # NOTE:
         ret_type_map = {-1: [I32], -2: [I64], -3: [F32], -4: [F64], -64: []}
         self._advice = advice
         self._state = current_state
@@ -1291,10 +1291,10 @@ class ModuleInstance(Eventful):
                         inst.mnemonic,
                         debug(inst.imm) if inst.imm else "",
                     )
-                    # DODODBG: tracking execution flow and metadata
+                    # NOTE:: tracking execution flow and metadata
                     # if self._current_function is not None:
                     #     print(f"In function: {self._current_function} executing {inst.mnemonic} @ offset {inst.offset}")
-                    # DODODBG
+                    # NOTE:
                     self._publish("will_execute_instruction", inst)
                     if 0x2 <= inst.opcode <= 0x11:  # This is a control-flow instruction
                         self.executor.zero_div = _eval_maybe_symbolic(
@@ -1636,9 +1636,9 @@ class ModuleInstance(Eventful):
             stack.push(r)
 
         # Ensure that we've returned to the correct block depth for the frame we just popped
-        # DODODBG: current function and return to metadata
+        # NOTE:: current function and return to metadata
         self._current_function = self._return_to_fidxs.pop()
-        # DODODBG
+        # NOTE:
         while len(self._block_depths) > f.expected_block_depth:
             # Discard the rest of the current block, then keep discarding blocks from the instruction queue
             # until we've purged the rest of this function.
@@ -1656,7 +1656,7 @@ class ModuleInstance(Eventful):
         f = stack.get_frame()
         assert imm.function_index in range(len(f.frame.module.funcaddrs))
         a = f.frame.module.funcaddrs[imm.function_index]
-        # DODODBG: publish the will_call_function event
+        # NOTE:: publish the will_call_function event
         self._publish("will_call_function", a)
         self._invoke_inner(stack, a, store)
 
@@ -1706,7 +1706,7 @@ class ModuleInstance(Eventful):
         ft_actual = func.type
         if ft_actual != ft_expect:
             raise TypeMismatchTrap(ft_actual, ft_expect)
-        # DODODBG: publish the will_call_function event
+        # NOTE:: publish the will_call_function event
         self._publish("will_call_function", a)
         self._invoke_inner(stack, a, store)
 

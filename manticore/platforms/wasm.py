@@ -335,6 +335,14 @@ class WASMWorld(Platform):
             self.forward_events_from(mem)
 
 
+    def get_params_by_func_index(self, idx=0):
+        """
+        Retrieves a function's parameter types  
+        :param idx: The index of function to invoke
+        """
+        return self.store.funcs[idx].type.param_types
+
+
     def invoke_by_index(self, idx, argv=[], module=None):
         """
         Sets up the WASMWorld to run the function specified by `idx` when `ManticoreWASM.run` is called
@@ -399,9 +407,9 @@ class WASMWorld(Platform):
         if not self.instantiated:
             raise RuntimeError("Trying to execute before instantiation!")
         try:
-            # DODODBG: tracking execution flow
+            # NOTE:: tracking execution flow
             # print("platform execute called")
-            # DODODBG
+            # NOTE:
             if not self._exec_instruction(self.instance, current_state):
                 raise TerminateState(f"Execution returned {self.stack.peek()}")
         except Trap as e:

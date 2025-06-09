@@ -84,7 +84,10 @@ class I32(int):
         :return: The unsigned equivalent
         """
         return _reinterpret(c_int32, c_uint32, val)
-
+    
+    @staticmethod
+    def get_size():
+        return 32
 
 class I64(int):
     """
@@ -114,6 +117,10 @@ class I64(int):
         :return: The unsigned equivalent
         """
         return _reinterpret(c_int64, c_uint64, val)
+    
+    @staticmethod
+    def get_size():
+        return 64
 
 
 class F32(float):
@@ -138,6 +145,10 @@ class F32(float):
         if issymbolic(other):
             return other
         return cls(other)
+    
+    @staticmethod
+    def get_size():
+        return 32
 
 
 class F64(float):
@@ -162,7 +173,10 @@ class F64(float):
         if issymbolic(other):
             return other
         return cls(other)
-
+    
+    @staticmethod
+    def get_size():
+        return 64
 
 ValType = type  #: https://www.w3.org/TR/wasm-core-1/#syntax-valtype
 Value_t = (I32, I64, F32, F64, BitVec)
@@ -362,7 +376,7 @@ def convert_instructions(inst_seq, fidx=None) -> WASMExpression:
     :param inst_seq: Sequence of raw instructions to process
     :return: The properly-typed instruction sequence in a format Manticore can use
     """
-    # DODODBG: added the offset value and function address value in order to gain granularity for the event callbacks (with wassail walk-around)
+    # NOTE: added the offset value and function address value in order to gain granularity for the event callbacks (with wassail walk-around)
     # !IMPORTANT: the idx shenanigans for the end and else "instructions" are needed to avoid discrepancies due to different instruction representation in wassail 
     out = []
     if not isinstance(inst_seq, list):
