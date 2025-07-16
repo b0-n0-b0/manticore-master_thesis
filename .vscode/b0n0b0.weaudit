@@ -70,28 +70,6 @@
       }
     },
     {
-      "label": "this is used for solve_one",
-      "entryType": 1,
-      "author": "b0n0b0",
-      "locations": [
-        {
-          "path": "manticore/core/smtlib/solver.py",
-          "startLine": 710,
-          "endLine": 710,
-          "label": "",
-          "description": ""
-        }
-      ],
-      "details": {
-        "severity": "",
-        "difficulty": "",
-        "type": "",
-        "description": "",
-        "exploit": "",
-        "recommendation": "Short term, \nLong term, \n"
-      }
-    },
-    {
       "label": "here we should send the will_call_function event",
       "entryType": 1,
       "author": "b0n0b0",

@@ -415,7 +415,7 @@ def convert_instructions(inst_seq, fidx=None) -> WASMExpression:
         elif i.op.id == 0x41:
             out.append(Instruction(i, I32ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x42:
-            out.append(Instruction(i, I64ConstImm(i.imm.value)), offset=offset, funcaddr=fidx)
+            out.append(Instruction(i, I64ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x43:
             out.append(Instruction(i, F32ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         elif i.op.id == 0x44:
