@@ -461,6 +461,7 @@ class Module:
                     m.funcs[idx].locals = [
                         type_map[e.type] for e in c.locals for _i in range(e.count)
                     ]
+                    # NOTE: This is where we added the FIDX value to the function object
                     m.funcs[idx].body = convert_instructions(c.code, fidx=idx)
             elif sec_id == SEC_DATA:  # https://www.w3.org/TR/wasm-core-1/#data-section%E2%91%A0
                 for d in section_data.payload.entries:
@@ -495,7 +496,15 @@ class Module:
                 else:
                     logger.info("Encountered unknown section")
                     # TODO - other custom sections (https://www.w3.org/TR/wasm-core-1/#custom-section%E2%91%A0)
-
+        # NOTE: in order to align the funcaddr metadata in the Instruction element we need to add it the number of imported functions 
+        # otherwise it won't match the index passed to invoke_by_index
+        imported_functions = 0
+        for import_elem in m.imports:
+            if type(import_elem.desc) != TableType and type(import_elem.desc) != MemoryType and type(import_elem.desc) != GlobalType:
+                imported_functions += 1
+        for func in m.funcs:
+            for inst in func.body:
+                inst.funcaddr+=imported_functions
         return m
 
 
