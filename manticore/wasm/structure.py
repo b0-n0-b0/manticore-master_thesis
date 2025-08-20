@@ -1666,7 +1666,7 @@ class ModuleInstance(Eventful):
         assert imm.function_index in range(len(f.frame.module.funcaddrs))
         a = f.frame.module.funcaddrs[imm.function_index]
         # NOTE:: publish the will_call_function event
-        print(f"from manticore -> current_function: {_current_function}")
+        print(f"from manticore -> current_function: {_current_function}", flush=True)
         self._publish("will_call_function", a)
         self._invoke_inner(stack, a, store)
 
@@ -1717,6 +1717,7 @@ class ModuleInstance(Eventful):
         if ft_actual != ft_expect:
             raise TypeMismatchTrap(ft_actual, ft_expect)
         # NOTE:: publish the will_call_function event
+        print(f"from manticore -> current_function: {_current_function}", flush=True)
         self._publish("will_call_function", a)
         self._invoke_inner(stack, a, store)
 
