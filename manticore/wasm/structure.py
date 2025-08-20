@@ -1283,13 +1283,13 @@ class ModuleInstance(Eventful):
         # Maps return types from instruction immediates into actual types
         # NOTE:: tracking execution flow
         # print("structure execute called")
-        # NOTE:
         ret_type_map = {-1: [I32], -2: [I64], -3: [F32], -4: [F64], -64: []}
         self._advice = advice
         self._state = current_state
         # Use the AtomicStack context manager to catch Concretization and roll back changes
         with AtomicStack(stack) as aStack:
             if self._instruction_queue:
+                # print(self._current_function)
                 # if self._current_function is not None:
                     # print(store.funcs[self._current_function])
                 try:
@@ -1666,8 +1666,8 @@ class ModuleInstance(Eventful):
         assert imm.function_index in range(len(f.frame.module.funcaddrs))
         a = f.frame.module.funcaddrs[imm.function_index]
         # NOTE:: publish the will_call_function event
-        print(f"from manticore -> current_function: {_current_function}", flush=True)
-        self._publish("will_call_function", a)
+        # print(f"from manticore -> current_function: {self._current_function}", flush=True)
+        self._publish("will_call_function", a, self._current_function)
         self._invoke_inner(stack, a, store)
 
     def call_indirect(self, store: "Store", stack: "AtomicStack", imm: CallIndirectImm):
@@ -1717,8 +1717,7 @@ class ModuleInstance(Eventful):
         if ft_actual != ft_expect:
             raise TypeMismatchTrap(ft_actual, ft_expect)
         # NOTE:: publish the will_call_function event
-        print(f"from manticore -> current_function: {_current_function}", flush=True)
-        self._publish("will_call_function", a)
+        self._publish("will_call_function", a, self._current_function)
         self._invoke_inner(stack, a, store)
 
 
