@@ -1282,7 +1282,7 @@ class ModuleInstance(Eventful):
         """
         # Maps return types from instruction immediates into actual types
         # NOTE:: tracking execution flow
-        # print("structure execute called")
+        # print("structure exec_instruction called")
         ret_type_map = {-1: [I32], -2: [I64], -3: [F32], -4: [F64], -64: []}
         self._advice = advice
         self._state = current_state
@@ -1371,6 +1371,9 @@ class ModuleInstance(Eventful):
                     logger.info("Trap: %s", str(exc))
                     self._publish("will_raise_trap", exc)
                     raise exc
+                except Exception as e:
+                    print("exception")
+                    print(e)
 
             elif aStack.find_type(Label):
                 # This used to raise a runtime error, but since we have some capacity to recover after a trap, we
@@ -1646,7 +1649,8 @@ class ModuleInstance(Eventful):
 
         # Ensure that we've returned to the correct block depth for the frame we just popped
         # NOTE:: current function and return to metadata
-        self._current_function = self._return_to_fidxs.pop()
+        if self._return_to_fidxs:
+            self._current_function = self._return_to_fidxs.pop()
         # NOTE:
         while len(self._block_depths) > f.expected_block_depth:
             # Discard the rest of the current block, then keep discarding blocks from the instruction queue
@@ -1663,11 +1667,13 @@ class ModuleInstance(Eventful):
         https://www.w3.org/TR/wasm-core-1/#exec-call
         """
         f = stack.get_frame()
+        # print("call")
         assert imm.function_index in range(len(f.frame.module.funcaddrs))
         a = f.frame.module.funcaddrs[imm.function_index]
         # NOTE:: publish the will_call_function event
         # print(f"from manticore -> current_function: {self._current_function}", flush=True)
         self._publish("will_call_function", a, self._current_function)
+        # print("after\n\n")
         self._invoke_inner(stack, a, store)
 
     def call_indirect(self, store: "Store", stack: "AtomicStack", imm: CallIndirectImm):
@@ -1677,6 +1683,7 @@ class ModuleInstance(Eventful):
 
         https://www.w3.org/TR/wasm-core-1/#exec-call-indirect
         """
+        print("call_indirect")
         f = stack.get_frame()
         assert f.frame.module.tableaddrs
         ta = f.frame.module.tableaddrs[0]

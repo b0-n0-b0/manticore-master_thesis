@@ -68,28 +68,6 @@
         "exploit": "",
         "recommendation": "Short term, \nLong term, \n"
       }
-    },
-    {
-      "label": "here we should send the will_call_function event",
-      "entryType": 1,
-      "author": "b0n0b0",
-      "locations": [
-        {
-          "path": "manticore/wasm/structure.py",
-          "startLine": 1649,
-          "endLine": 1649,
-          "label": "",
-          "description": ""
-        }
-      ],
-      "details": {
-        "severity": "",
-        "difficulty": "",
-        "type": "",
-        "description": "",
-        "exploit": "",
-        "recommendation": "Short term, \nLong term, \n"
-      }
     }
   ],
   "auditedFiles": [],
