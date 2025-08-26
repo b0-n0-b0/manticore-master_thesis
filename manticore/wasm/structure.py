@@ -1371,9 +1371,9 @@ class ModuleInstance(Eventful):
                     logger.info("Trap: %s", str(exc))
                     self._publish("will_raise_trap", exc)
                     raise exc
-                except Exception as e:
-                    print("exception")
-                    print(e)
+                # except Exception as e:
+                #     print("exception")
+                #     print(e)
 
             elif aStack.find_type(Label):
                 # This used to raise a runtime error, but since we have some capacity to recover after a trap, we
@@ -1649,7 +1649,7 @@ class ModuleInstance(Eventful):
 
         # Ensure that we've returned to the correct block depth for the frame we just popped
         # NOTE:: current function and return to metadata
-        if self._return_to_fidxs:
+        if self._return_to_fidxs and len(self._return_to_fidxs) > 0:
             self._current_function = self._return_to_fidxs.pop()
         # NOTE:
         while len(self._block_depths) > f.expected_block_depth:
