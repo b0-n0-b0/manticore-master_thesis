@@ -376,14 +376,13 @@ def convert_instructions(inst_seq, fidx=None) -> WASMExpression:
     :param inst_seq: Sequence of raw instructions to process
     :return: The properly-typed instruction sequence in a format Manticore can use
     """
-    # NOTE: added the offset value and function address value in order to gain granularity for the event callbacks (with wassail walk-around)
+    # NOTE-THESIS: added the offset value and function address value in order to gain granularity for the event callbacks (with wassail walk-around)
     # !IMPORTANT: the idx shenanigans for the end and else "instructions" are needed to avoid discrepancies due to different instruction representation in wassail 
     out = []
     if not isinstance(inst_seq, list):
         inst_seq = list(wasm.decode_bytecode(inst_seq))
     i: wasm.decode.Instruction
     idx = 0
-    # print(f"_______________ function {fidx} _______________")
     for i in inst_seq:
         offset = idx
         idx = idx + 1
@@ -422,7 +421,6 @@ def convert_instructions(inst_seq, fidx=None) -> WASMExpression:
             out.append(Instruction(i, F64ConstImm(i.imm.value), offset=offset, funcaddr=fidx))
         else:
             out.append(Instruction(i, offset=offset, funcaddr=fidx))
-        # print(f"Instr {offset}: {i.op.mnemonic}")
     return out
 
 

@@ -42,8 +42,5 @@ class State(StateBase):
         return frame.locals
 
     def execute(self):
-        # NOTE:: tracking execution flow
-        # print("State execute called")
-        # NOTE:
         super().execute()
         return self._platform.execute(self)

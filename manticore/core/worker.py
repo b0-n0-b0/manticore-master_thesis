@@ -134,9 +134,6 @@ class Worker:
                         # This does not hold the lock so we may loss some event
                         # flickering
                         while not m._killed.value:
-                            # NOTE:: tracking execution flow
-                            # print("worker execute called")
-                            # NOTE:
                             current_state.execute()
                         else:
                             logger.debug("[%r] Stopped and/or Killed", self.id)

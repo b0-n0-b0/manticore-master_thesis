@@ -204,6 +204,8 @@ class ManticoreBase(Eventful):
         "kill_state",
         "execute_instruction",
         "terminate_execution",
+        # NOTE-THESIS: added the call_function event to the published list
+        "call_function",
     }
 
     def __init__(
@@ -932,9 +934,9 @@ class ManticoreBase(Eventful):
         plugin.manticore = self
         self.plugins[plugin.unique_name] = plugin
         events = Eventful.all_events()
-        # NOTE:: poccio orribile, poi lo fixo
+        # NOTE-THESIS: poccio orribile, poi lo fixo
         events.add("call_function")
-        # NOTE:
+
         prefix = Eventful.prefixes
         all_events = [x + y for x, y in itertools.product(prefix, events)]
         for event_name in all_events:

@@ -461,7 +461,7 @@ class Module:
                     m.funcs[idx].locals = [
                         type_map[e.type] for e in c.locals for _i in range(e.count)
                     ]
-                    # NOTE: This is where we added the FIDX value to the function object
+                    # NOTE-THESIS: This is where we added the FIDX value to the function object
                     m.funcs[idx].body = convert_instructions(c.code, fidx=idx)
             elif sec_id == SEC_DATA:  # https://www.w3.org/TR/wasm-core-1/#data-section%E2%91%A0
                 for d in section_data.payload.entries:
@@ -496,7 +496,7 @@ class Module:
                 else:
                     logger.info("Encountered unknown section")
                     # TODO - other custom sections (https://www.w3.org/TR/wasm-core-1/#custom-section%E2%91%A0)
-        # NOTE: in order to align the funcaddr metadata in the Instruction element we need to add it the number of imported functions 
+        # NOTE-THESIS: in order to align the funcaddr metadata in the Instruction element we need to add it the number of imported functions 
         # otherwise it won't match the index passed to invoke_by_index
         imported_functions = 0
         for import_elem in m.imports:
@@ -821,10 +821,10 @@ class ModuleInstance(Eventful):
         self._block_depths = [0]
         self._advice = None
         self._state = None
-        # NOTE:: current function and return to metadata
+        # NOTE-THESIS: current function and return to metadata
         self._current_function = None
         self._return_to_fidxs = []
-        # NOTE:
+
         super().__init__()
 
     def __getstate__(self):
@@ -845,10 +845,9 @@ class ModuleInstance(Eventful):
                 "_block_depths": self._block_depths,
             }
         )
-        # NOTE:: current function and return to metadata
+        # NOTE-THESIS: current function and return to metadata
         state["_current_function"] = self._current_function
         state["_return_to_fidxs"] = self._return_to_fidxs
-        # NOTE:
 
         return state
 
@@ -865,10 +864,10 @@ class ModuleInstance(Eventful):
         self.local_names = state["local_names"]
         self._instruction_queue = state["_instruction_queue"]
         self._block_depths = state["_block_depths"]
-        # NOTE:: current function and return to metadata
+        # NOTE-THESIS: current function and return to metadata
         self._current_function = state["_current_function"]
         self._return_to_fidxs = state["_return_to_fidxs"]
-        # NOTE:
+
         self._advice = None
         self._state = None
         super().__setstate__(state)
@@ -1101,11 +1100,11 @@ class ModuleInstance(Eventful):
         :param store: The current store, to use for execution
         """
         assert funcaddr in range(len(store.funcs))
-        # NOTE:: current function and return to metadata
+        # NOTE-THESIS:: current function and return to metadata
         if self._current_function is not None:
             self._return_to_fidxs.append(self._current_function)
         self._current_function = funcaddr
-        # NOTE:
+
         f: ProtoFuncInst = store.funcs[funcaddr]
         ty = f.type
         assert len(ty.result_types) <= 1
@@ -1281,8 +1280,6 @@ class ModuleInstance(Eventful):
         :return: True if execution succeeded, False if there are no more instructions to execute
         """
         # Maps return types from instruction immediates into actual types
-        # NOTE:: tracking execution flow
-        # print("structure exec_instruction called")
         ret_type_map = {-1: [I32], -2: [I64], -3: [F32], -4: [F64], -64: []}
         self._advice = advice
         self._state = current_state
@@ -1300,10 +1297,6 @@ class ModuleInstance(Eventful):
                         inst.mnemonic,
                         debug(inst.imm) if inst.imm else "",
                     )
-                    # NOTE:: tracking execution flow and metadata
-                    # if self._current_function is not None:
-                    #     print(f"In function: {self._current_function} executing {inst.mnemonic} @ offset {inst.offset}")
-                    # NOTE:
                     self._publish("will_execute_instruction", inst)
                     if 0x2 <= inst.opcode <= 0x11:  # This is a control-flow instruction
                         self.executor.zero_div = _eval_maybe_symbolic(
@@ -1648,10 +1641,9 @@ class ModuleInstance(Eventful):
             stack.push(r)
 
         # Ensure that we've returned to the correct block depth for the frame we just popped
-        # NOTE:: current function and return to metadata
+        # NOTE-THESIS: current function and return to metadata
         if self._return_to_fidxs and len(self._return_to_fidxs) > 0:
             self._current_function = self._return_to_fidxs.pop()
-        # NOTE:
         while len(self._block_depths) > f.expected_block_depth:
             # Discard the rest of the current block, then keep discarding blocks from the instruction queue
             # until we've purged the rest of this function.
@@ -1670,10 +1662,8 @@ class ModuleInstance(Eventful):
         # print("call")
         assert imm.function_index in range(len(f.frame.module.funcaddrs))
         a = f.frame.module.funcaddrs[imm.function_index]
-        # NOTE:: publish the will_call_function event
-        # print(f"from manticore -> current_function: {self._current_function}", flush=True)
+        # NOTE-THESIS:: publish the will_call_function event
         self._publish("will_call_function", a, self._current_function)
-        # print("after\n\n")
         self._invoke_inner(stack, a, store)
 
     def call_indirect(self, store: "Store", stack: "AtomicStack", imm: CallIndirectImm):
@@ -1683,7 +1673,6 @@ class ModuleInstance(Eventful):
 
         https://www.w3.org/TR/wasm-core-1/#exec-call-indirect
         """
-        print("call_indirect")
         f = stack.get_frame()
         assert f.frame.module.tableaddrs
         ta = f.frame.module.tableaddrs[0]
@@ -1723,7 +1712,7 @@ class ModuleInstance(Eventful):
         ft_actual = func.type
         if ft_actual != ft_expect:
             raise TypeMismatchTrap(ft_actual, ft_expect)
-        # NOTE:: publish the will_call_function event
+        # NOTE-THESIS: publish the will_call_function event
         self._publish("will_call_function", a, self._current_function)
         self._invoke_inner(stack, a, store)
 
